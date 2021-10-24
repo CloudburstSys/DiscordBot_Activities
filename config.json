@@ -1,0 +1,17 @@
+{
+    "token": "",
+    "dburl": "",
+    "roles": {
+        "permissions": {
+            "owner": "",
+            "admin": "",
+            "mod": "",
+            "verified": ""
+        },
+        "pronouns": {},
+        "punishment": {}
+    },
+    "devGuild": "",
+    "errorLogChannel": "",
+    "defaultLang": "en-us"
+}

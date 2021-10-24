@@ -1,0 +1,31 @@
+{
+    "core": {
+        "action": {
+            "error": {
+                "notexist": "That action does not exist.",
+                "unknown": "I encountered an unknown error while trying to process that action.",
+                "disabled": "The module that action is tied to ({}) is disabled."
+            }
+        },
+        "errorhandle": {
+            "devembed": {
+                "title": "Error Dump",
+                "desc": "This error dump contains everything needed to diognose and fix an error.\n*Please do not share the entire dump to a user. You can tell them in simple terms what caused the error if they wish to know however.*",
+                "fieldnames": {
+                    "type": "Error Type",
+                    "code": "Error Code",
+                    "message": "Error Message",
+                    "stack": "Stack Trace",
+                    "path": "API Path"
+                }
+            },
+            "userembed": {
+                "title": "Something's Gone Wrong...",
+                "desc": "Whoops! It would appear something has gone wrong. Can you send the following error code to our Discord server so we can diognose the issue?\n\n`{}`",
+                "components": {
+                    "joinDiscord": "Join BOTNAME Support Discord"
+                }
+            }
+        }
+    }
+}
