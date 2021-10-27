@@ -1,8 +1,9 @@
 /*
     A class dedicated to the code assignment and handling of errors.
     All error codes are base64 of raw bytes which follow the following pattern
-    SHORTYEAR MONTH DAY HOUR MINUTE SECOND RAND RAND RAND RAND RAND
+    SHORTYEAR RAND MONTH RAND DAY RAND HOUR RAND MINUTE RAND SECOND
 */
+require("./ClassExtentions");
 const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 
 class ErrorLogger {
@@ -27,45 +28,45 @@ class ErrorLogger {
             Math.floor(Math.random() * 64)
         ];
 
-        let errorCodeBuffer = Buffer.from([shortYear, month, day, hour, minute, second, randomNumbers[0], randomNumbers[1], randomNumbers[2], randomNumbers[3], randomNumbers[4]]);
+        let errorCodeBuffer = Buffer.from([shortYear, randomNumbers[0], month, randomNumbers[1], day, randomNumbers[2], hour, randomNumbers[3], minute, randomNumbers[4], second]);
 
         return errorCodeBuffer.toString("base64");
     }
 
-    _genDevEmbed(ecode, type, code, message, stack) {
+    async _genDevEmbed(ecode, type, code, message, stack) {
         // Generates the embed sent to the bot developers. Contains detailed error information
         let embed = new MessageEmbed()
             .setColor("#ff4f4f")
-            .setTitle(this._Client.LanguageHandler.get("core/errorhandle/devembed/title"))
-            .setDescription(this._Client.LanguageHandler.get("core/errorhandle/devembed/desc"))
+            .setTitle(await this._Client.LanguageHandler.get("core/errorhandle/devembed/title"))
+            .setDescription(await this._Client.LanguageHandler.get("core/errorhandle/devembed/desc"))
             .addFields(
-                { name: this._Client.LanguageHandler.get("core/errorhandle/devembed/fieldnames/type"), value: type, inline: true },
-                { name: this._Client.LanguageHandler.get("core/errorhandle/devembed/fieldnames/code"), value: code, inline: true },
-                { name: this._Client.LanguageHandler.get("core/errorhandle/devembed/fieldnames/message"), value: message, inline: true }
+                { name: await this._Client.LanguageHandler.get("core/errorhandle/devembed/fieldnames/type"), value: type, inline: true },
+                { name: await this._Client.LanguageHandler.get("core/errorhandle/devembed/fieldnames/code"), value: code, inline: true },
+                { name: await this._Client.LanguageHandler.get("core/errorhandle/devembed/fieldnames/message"), value: message, inline: true }
             )
             .setTimestamp(Date.now())
             .setFooter(ecode);
 
-        if (type == "Node.js") embed.addField(this._Client.LanguageHandler.get("core/errorhandle/devembed/fieldnames/stack"), stack, false);
-        if (type == "Discord API") embed.addField(this._Client.LanguageHandler.get("core/errohandle/devembed/fieldnames/path"), stack, false);
+        if (type == "Node.js") embed.addField(await this._Client.LanguageHandler.get("core/errorhandle/devembed/fieldnames/stack"), stack, false);
+        if (type == "Discord API") embed.addField(await this._Client.LanguageHandler.get("core/errohandle/devembed/fieldnames/path"), stack, false);
 
         return embed;
     }
 
-    _genUserEmbed(errorCode) {
+    async _genUserEmbed(errorCode) {
         let embed = new MessageEmbed()
             .setColor("#fff266")
-            .setTitle(this._Client.LanguageHandler.get("core/errorhandle/userembed/title"))
-            .setDescription(this._Client.LanguageHandler.get("core/errorhandle/userembed/desc").format(errorCode));
+            .setTitle(await this._Client.LanguageHandler.get("core/errorhandle/userembed/title"))
+            .setDescription((await this._Client.LanguageHandler.get("core/errorhandle/userembed/desc")).format(errorCode));
 
         return embed;
     }
 
-    _genUserComponent() {
+    async _genUserComponent() {
         let components = new MessageActionRow()
             .addComponents(
                 new MessageButton()
-                    .setLable(this._Client.LanguageHandler.get("core/errorhandle/userembed/components/joinDiscord"))
+                    .setLabel(await this._Client.LanguageHandler.get("core/errorhandle/userembed/components/joinDiscord"))
                     .setStyle("LINK")
                     .setURL("https://discord.gg/coneyponey")
             );
@@ -78,9 +79,24 @@ class ErrorLogger {
             // DiscordAPI error.
             let errorCode = this._genErrorCode();
 
-            let devEmbed = this._genDevEmbed(errorCode, "Discord API", error.code, error.message, error.method + ": " + error.path);
-            let userEmbed = this._genUserEmbed(errorCode);
-            let userComponents = this._genUserComponent();
+            let devEmbed = await this._genDevEmbed(errorCode, "Discord API", error.code, error.message, error.method + ": " + error.path);
+            let userEmbed = await this._genUserEmbed(errorCode);
+            let userComponents = await this._genUserComponent();
+
+            let devGuild = await this._Client.guilds.fetch(this._Client.config.devGuild);
+            let logChannel = await devGuild.channels.fetch(this._Client.config.errorLogChannel);
+
+            await logChannel.send({ embeds: [devEmbed] });
+
+            if (interaction.replied) return interaction.editReply({ embeds: [userEmbed], components: [userComponents] });
+            if (interaction.deferred) return interaction.followUp({ embeds: [userEmbed], components: [userComponents] });
+            return interaction.reply({ embeds: [userEmbed], components: [userComponents] });
+        } else {
+            let errorCode = this._genErrorCode();
+
+            let devEmbed = await this._genDevEmbed(errorCode, "Node.js", error.name, error.message, error.stack.toString().trimEllip(1021));
+            let userEmbed = await this._genUserEmbed(errorCode);
+            let userComponents = await this._genUserComponent();
 
             let devGuild = await this._Client.guilds.fetch(this._Client.config.devGuild);
             let logChannel = await devGuild.channels.fetch(this._Client.config.errorLogChannel);
@@ -93,3 +109,5 @@ class ErrorLogger {
         }
     }
 }
+
+module.exports = ErrorLogger;
