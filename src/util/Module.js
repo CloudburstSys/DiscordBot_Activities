@@ -57,7 +57,11 @@ class Module {
 
 		if (action == null) return;
 
-		await action.execute(interaction);
+		try {
+			await action.execute(interaction);
+		} catch (error) {
+			this._Client.ErrorLogger.reportError(interaction, error);
+		}
 	}
 
 	getActions(includeEvents = true) {
