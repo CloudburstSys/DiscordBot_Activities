@@ -34,6 +34,15 @@ String.prototype.format = function () {
 }
 
 /**
+ * Trims a string to the desired length and adds "..." after it.
+ * @param {number} The length to trim to
+ * @returns {String}
+*/
+String.prototype.trimEllip = function (length) {
+    return this.length > length ? this.substring(0, length) + "..." : this;
+}
+
+/**
  * Return a random element of the array.
  * @returns {any}
  */
