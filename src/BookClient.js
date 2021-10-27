@@ -14,6 +14,7 @@ const { MongoClient } = require('mongodb');
 
 const LangHandler = require("./util/LangHandler");
 const PronounHandler = require("./util/PronounHandler");
+const ErrorLogger = require("./util/ErrorLogger");
 
 class BookClient extends Client {
     constructor(config, options) {
@@ -24,6 +25,7 @@ class BookClient extends Client {
 
         this.LanguageHandler = new LangHandler(this);
         this.PronounHandler = new PronounHandler(this);
+        this.ErrorLogger = new ErrorLogger(this);
 
         if (this.config.dburl != "") {
             this._DBClient = new MongoClient(this.config.dburl);
